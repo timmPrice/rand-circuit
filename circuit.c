@@ -1,9 +1,10 @@
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include <stdbool.h>
 
-enum gateName{
+enum gateName {
     input,
     output,
     AND,
@@ -26,8 +27,8 @@ typedef struct {
 } Node;
 
 /* Generate n input nodes, m output nodes, and internal gate nodes */
-Node* genNodes(int n, int m, int* out_size) {
-    int internal = rand() % ((5 * n) / 2);
+Node* genNodes(int n, int m, int* out_size, int alpha) {
+    int internal = floor(n + m) + rand() % (alpha * (n + m));
     int total_nodes = n + m + internal;
 
     *out_size = total_nodes;
@@ -47,7 +48,7 @@ Node* genNodes(int n, int m, int* out_size) {
             /* generate internal nodes */
             Node temp_node = {(enum gateName) (rand() % 6 + 2), i, {0, false}, {0, false}};
             gateList[i] = temp_node;
-        } else  {
+        } else {
             /* generate output nodes */ 
             Node output_temp = {output, i, {-1, false}, {-1, false}};
             gateList[i] = output_temp;
@@ -57,11 +58,15 @@ Node* genNodes(int n, int m, int* out_size) {
     return gateList;
 }
 
+void returnNodes() {
+
+}
+
 int main () {
     srand(time(NULL));
-    int n = 100; int m = 100;
+    int n = 3; int m = 3;
     int nodes_length = 0;
-    Node* nodes = genNodes(n, m, &nodes_length);
+    Node* nodes = genNodes(n, m, &nodes_length, 2);
 
     for (int i = 0; i < nodes_length; i++) {
         printf("gateType: %u, inputA: %i, inputB: %i, gateId: %i\n", nodes[i].name, nodes[i].inputA.outputid, nodes[i].inputB.outputid, nodes[i].nodeid);
