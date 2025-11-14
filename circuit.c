@@ -32,7 +32,27 @@ int numInternal(int n, int m, int alpha, int* internal) {
     return (n + m + int_nodes);
 }
 
-/* Generate n input nodes, m output nodes, and internal gate nodes */
+/* connects internal and input nodes */
+void connect_internal_nodes(int n, int internal, int total_nodes, Node* nodes) {
+    /* internal gates range from n -> internal + n */
+    for(int i = n; i < internal + n; i++) {
+        nodes[i].inputA.outputid = rand() % i; 
+        nodes[i].inputB.outputid = rand () % i; 
+
+        nodes[i].inputA.not = rand() % 2;
+        nodes[i].inputB.not = rand() % 2;
+    }
+}
+
+void connect_output_nodes(int n, int m, int internal, int total_nodes, Node* nodes) {
+    int output_range = n + internal;
+    for(int i = output_range; i < output_range + m; i++) {
+        nodes[i].inputA.outputid = (rand() % internal) + n;
+        nodes[i].inputB.outputid = -1;  
+    }
+}
+
+/* Generate n input nodes, m output nodes, and internal gate nodes and connect graph randomly */
 Node* genNodes(int n, int m, int internal, int total_nodes) {
     
     Node* gateList = (Node*)malloc(total_nodes * sizeof(Node));
@@ -48,7 +68,7 @@ Node* genNodes(int n, int m, int internal, int total_nodes) {
             gateList[i] = input_temp;
         } else if (i < n + internal) {
             /* generate internal nodes */
-            Node temp_node = {(enum gateName) (rand() % 6 + 2), i, {0, false}, {0, false}};
+            Node temp_node = {(enum gateName) (rand() % 5 + 2), i, {0, false}, {0, false}};
             gateList[i] = temp_node;
         } else {
             /* generate output nodes */ 
@@ -56,23 +76,22 @@ Node* genNodes(int n, int m, int internal, int total_nodes) {
             gateList[i] = output_temp;
         };
     }   
-
-    return gateList;
-}
-
-void connect_nodes() {
     
+    connect_internal_nodes(n, internal, total_nodes, gateList);
+    connect_output_nodes(n, m, internal, total_nodes, gateList);
+    return gateList;
 }
 
 int main () {
     srand(time(NULL));
-    int n = 3; int m = 3;
+    int n = 5; int m = 5;
     int internal = 0;
     int total_nodes = numInternal(n, m, 2, &internal);
     Node* nodes = genNodes(n, m, internal, total_nodes);
 
     for (int i = 0; i < total_nodes; i++) {
         printf("gateType: %u, inputA: %i, inputB: %i, gateId: %i\n", nodes[i].name, nodes[i].inputA.outputid, nodes[i].inputB.outputid, nodes[i].nodeid);
+        printf("nots: %b, %b\n", nodes[i].inputA.not, nodes[i].inputB.not);
     }
 
     return 0; 
