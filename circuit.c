@@ -47,7 +47,8 @@ void connect_internal_nodes(int n, int internal, int total_nodes, Node* nodes) {
 void connect_output_nodes(int n, int m, int internal, int total_nodes, Node* nodes) {
     int output_range = n + internal;
     for(int i = output_range; i < output_range + m; i++) {
-        nodes[i].inputA.outputid = (rand() % internal) + n;
+        // nodes[i].inputA.outputid = (rand() % (n + internal)); // includes input nodes
+        nodes[i].inputA.outputid = (rand() % internal) + n; 
         nodes[i].inputB.outputid = -1;  
     }
 }
@@ -91,7 +92,7 @@ int main () {
 
     for (int i = 0; i < total_nodes; i++) {
         printf("gateType: %u, inputA: %i, inputB: %i, gateId: %i\n", nodes[i].name, nodes[i].inputA.outputid, nodes[i].inputB.outputid, nodes[i].nodeid);
-        printf("nots: %b, %b\n", nodes[i].inputA.not, nodes[i].inputB.not);
+        printf("nots: %d, %d\n", nodes[i].inputA.not, nodes[i].inputB.not);
     }
 
     return 0; 
