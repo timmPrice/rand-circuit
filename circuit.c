@@ -5,8 +5,8 @@
 #include <stdbool.h>
 
 enum gateName {
-    input,
-    output,
+    INPUT,
+    OUTPUT,
     AND,
     OR,
     NAND,
@@ -26,13 +26,15 @@ typedef struct {
     InputEdge inputB;
 } Node;
 
+int numInternal(int n, int m, int alpha, int* internal) {
+    int int_nodes = floor(n + m) + rand() % (alpha * (n + m));
+    *internal = int_nodes;
+    return (n + m + int_nodes);
+}
+
 /* Generate n input nodes, m output nodes, and internal gate nodes */
-Node* genNodes(int n, int m, int* out_size, int alpha) {
-    int internal = floor(n + m) + rand() % (alpha * (n + m));
-    int total_nodes = n + m + internal;
-
-    *out_size = total_nodes;
-
+Node* genNodes(int n, int m, int internal, int total_nodes) {
+    
     Node* gateList = (Node*)malloc(total_nodes * sizeof(Node));
 
     if (gateList == NULL) {
@@ -42,7 +44,7 @@ Node* genNodes(int n, int m, int* out_size, int alpha) {
     for (int i = 0; i < total_nodes; i++) {
         if (i < n) { 
             /* generate n input nodes */
-            Node input_temp = {input, i, {-1, false}, {-1, false}};
+            Node input_temp = {INPUT, i, {-1, false}, {-1, false}};
             gateList[i] = input_temp;
         } else if (i < n + internal) {
             /* generate internal nodes */
@@ -50,7 +52,7 @@ Node* genNodes(int n, int m, int* out_size, int alpha) {
             gateList[i] = temp_node;
         } else {
             /* generate output nodes */ 
-            Node output_temp = {output, i, {-1, false}, {-1, false}};
+            Node output_temp = {OUTPUT, i, {-1, false}, {-1, false}};
             gateList[i] = output_temp;
         };
     }   
@@ -58,17 +60,18 @@ Node* genNodes(int n, int m, int* out_size, int alpha) {
     return gateList;
 }
 
-void returnNodes() {
-
+void connect_nodes() {
+    
 }
 
 int main () {
     srand(time(NULL));
     int n = 3; int m = 3;
-    int nodes_length = 0;
-    Node* nodes = genNodes(n, m, &nodes_length, 2);
+    int internal = 0;
+    int total_nodes = numInternal(n, m, 2, &internal);
+    Node* nodes = genNodes(n, m, internal, total_nodes);
 
-    for (int i = 0; i < nodes_length; i++) {
+    for (int i = 0; i < total_nodes; i++) {
         printf("gateType: %u, inputA: %i, inputB: %i, gateId: %i\n", nodes[i].name, nodes[i].inputA.outputid, nodes[i].inputB.outputid, nodes[i].nodeid);
     }
 
