@@ -183,9 +183,9 @@ int main() {
     int total_nodes = numInternal(n, m, 10, &internal);
     Node* nodes = genNodes(n, m, internal, total_nodes);
 
-    for (int i = 0; i < total_nodes; i++) {
-        printf("gateType: %u, inputA: %i, inputB: %i, gateId: %i\n", nodes[i].name, nodes[i].inputA.outputid, nodes[i].inputB.outputid, nodes[i].nodeid);
-    }
+    // for (int i = 0; i < total_nodes; i++) {
+    //     printf("gateType: %u, inputA: %i, inputB: %i, gateId: %i\n", nodes[i].name, nodes[i].inputA.outputid, nodes[i].inputB.outputid, nodes[i].nodeid);
+    // }
 
     tableGen(nodes, n, m, internal);
     return 0; 
