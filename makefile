@@ -16,7 +16,7 @@ build/done: ./espresso/CMakeLists.txt
 	@echo -e "\033[34m╚═════════════════════════════════════════════════╝\033[0m"
 
 circuit: espresso circuit.c 
-	zig cc circuit.c -o gencircuit
+	gcc circuit.c -o gencircuit
 	@./gencircuit
 	@./build/espresso circuit.pla > ./out/a.pla
 	@echo -e "\033[34m╔═════════════════════════════════════════════════╗\033[0m"
