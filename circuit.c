@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <stdbool.h>
+#include "circuit.h"
 
 enum gateName {
     INPUT,
@@ -83,17 +84,110 @@ Node* genNodes(int n, int m, int internal, int total_nodes) {
     return gateList;
 }
 
-int main () {
+bool evalNode(Node* nodes, int id, bool* inputs, bool* repeat, bool* repeatValid) {
+    bool result;
+    Node* g = &nodes[id];
+    switch(g -> name) {
+        case INPUT:
+            result = inputs[id];
+            break;
+
+        case OUTPUT:
+            result = evalNode(nodes, g -> inputA.outputid, inputs, repeat, repeatValid);
+            break;
+
+        default: {
+            bool a = evalNode(nodes, g -> inputA.outputid, inputs, repeat, repeatValid);
+            bool b = evalNode(nodes, g -> inputB.outputid, inputs, repeat, repeatValid);
+            
+            if (g -> inputA.not) {
+                a = !a;
+            }
+
+            if (g -> inputB.not) {
+                b = !b;
+            }
+           
+            switch(g -> name) {
+                case AND: 
+                    result = a && b;
+                    break;
+                case OR: 
+                    result = a || b;
+                    break;
+                case NAND: 
+                    result = !(a && b);
+                    break;
+                case NOR: 
+                    result = !(a || b);
+                    break;
+                case XOR: 
+                    result = a ^ b;
+                    break;
+                default: 
+                    result = 0;
+            }
+        }
+    }
+    repeat[id] = result;
+    repeatValid[id] = true;
+    return result;
+}
+
+void tableGen(Node* nodes, int n, int m, int internal) {
+    bool repeat[1024];
+    bool repeatValid[1024];
+    bool inputs[32];
+
+    int totalnodes = n + m + internal;
+
+    FILE* fp = fopen("circuit.pla", "w");
+
+    if (!fp) {
+       perror("file does not exist");
+       return;
+    }
+    
+    fprintf(fp, ".i %d\n", n);
+    fprintf(fp, ".o %d\n", m);
+
+    for (int i = 0; i < (1 << n); i++) {
+        for (int j = 0; j < n; j++) {
+            inputs[j] = (i >> j) & 1;
+        }
+
+        for (int j = 0; j < totalnodes; j++)
+            repeatValid[j] = false;
+
+        // printf("input: ");
+        for (int j = 0; j < n; j++) {
+            fprintf(fp, "%d", inputs[j]); 
+        }
+
+        fprintf(fp, " ");
+
+        // printf(" → output: ");
+        for (int j = 0; j < m; j++) {
+            bool val = evalNode(nodes, (n + internal + j), inputs, repeat, repeatValid);
+            fprintf(fp, "%d", val);
+        }
+        fprintf(fp, "\n");
+    }  
+    fprintf(fp, ".e\n");
+    fclose(fp);
+}
+
+int main() {
     srand(time(NULL));
     int n = 5; int m = 5;
     int internal = 0;
-    int total_nodes = numInternal(n, m, 2, &internal);
+    int total_nodes = numInternal(n, m, 10, &internal);
     Node* nodes = genNodes(n, m, internal, total_nodes);
 
-    for (int i = 0; i < total_nodes; i++) {
-        printf("gateType: %u, inputA: %i, inputB: %i, gateId: %i\n", nodes[i].name, nodes[i].inputA.outputid, nodes[i].inputB.outputid, nodes[i].nodeid);
-        printf("nots: %d, %d\n", nodes[i].inputA.not, nodes[i].inputB.not);
-    }
+    // for (int i = 0; i < total_nodes; i++) {
+    //     printf("gateType: %u, inputA: %i, inputB: %i, gateId: %i\n", nodes[i].name, nodes[i].inputA.outputid, nodes[i].inputB.outputid, nodes[i].nodeid);
+    // }
 
+    tableGen(nodes, n, m, internal);
     return 0; 
 }
