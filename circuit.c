@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <stdbool.h>
+#include "circuit.h"
 
 enum gateName {
     INPUT,
@@ -139,28 +140,43 @@ void tableGen(Node* nodes, int n, int m, int internal) {
 
     int totalnodes = n + m + internal;
 
+    FILE* fp = fopen("circuit.pla", "w");
+
+    if (!fp) {
+       perror("file does not exist");
+       return;
+    }
+    
+    fprintf(fp, ".i %d\n", n);
+    fprintf(fp, ".o %d\n", m);
+
     for (int i = 0; i < (1 << n); i++) {
         for (int j = 0; j < n; j++) {
             inputs[j] = (i >> j) & 1;
         }
+
         for (int j = 0; j < totalnodes; j++)
             repeatValid[j] = false;
 
-        printf("input: ");
+        // printf("input: ");
         for (int j = 0; j < n; j++) {
-            printf("%d", inputs[j]); 
+            fprintf(fp, "%d", inputs[j]); 
         }
-        
-        printf(" → output: ");
+
+        fprintf(fp, " ");
+
+        // printf(" → output: ");
         for (int j = 0; j < m; j++) {
             bool val = evalNode(nodes, (n + internal + j), inputs, repeat, repeatValid);
-            printf("%d", val);
+            fprintf(fp, "%d", val);
         }
-        printf("\n");
+        fprintf(fp, "\n");
     }  
+    fprintf(fp, ".e\n");
+    fclose(fp);
 }
 
-int main () {
+int main() {
     srand(time(NULL));
     int n = 5; int m = 5;
     int internal = 0;
@@ -171,11 +187,6 @@ int main () {
         printf("gateType: %u, inputA: %i, inputB: %i, gateId: %i\n", nodes[i].name, nodes[i].inputA.outputid, nodes[i].inputB.outputid, nodes[i].nodeid);
     }
 
-    // for (int i = 0; i < total_nodes; i++) {
-    //     bool result = evalNode(nodes, i, inputs);
-    //     printf("%b\n", result);
-    // }
-    
     tableGen(nodes, n, m, internal);
     return 0; 
 }
