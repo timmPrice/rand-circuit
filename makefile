@@ -1,4 +1,4 @@
-all: setup espresso circuit
+all: setup espresso circuit verilog
 
 setup: out
 	
@@ -18,11 +18,16 @@ build/done: ./espresso/CMakeLists.txt
 circuit: espresso circuit.c 
 	gcc circuit.c -o gencircuit
 	@./gencircuit
-	@./build/espresso circuit.pla > ./out/a.pla
+	@./build/espresso circuit.pla > ./out/reduced_circuit.pla
 	@echo -e "\033[34m╔═════════════════════════════════════════════════╗\033[0m"
-	@echo -e "\033[34m║             Circuit Gen Complete                ║\033[0m"
+	@echo -e "\033[34m║           Circuit Generation Complete           ║\033[0m"
 	@echo -e "\033[34m╚═════════════════════════════════════════════════╝\033[0m"
 
+verilog: gen_verilog.py
+	python3 gen_verilog.py
+	@echo -e "\033[33m╔═════════════════════════════════════════════════╗\033[0m"
+	@echo -e "\033[33m║           Verilog Generation Complete           ║\033[0m"
+	@echo -e "\033[33m╚═════════════════════════════════════════════════╝\033[0m"
 clean: 
 	rm -rf ./build/
 	rm -f gencircuit
