@@ -1,2 +1,0 @@
-/usr/bin/ar qc libutility.a CMakeFiles/utility.dir/utility/cpu_time.c.o CMakeFiles/utility.dir/utility/prtime.c.o CMakeFiles/utility.dir/utility/strsav.c.o
-/usr/bin/ranlib libutility.a
