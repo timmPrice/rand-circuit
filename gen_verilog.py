@@ -35,28 +35,28 @@ def gen_verilog(circuit: Circuit):
         print(");", file=file)
         print("", file=file)
         for i in range(circuit.n):
-            print(f"wire x{i} = in[{i}];", file=file) 
+            print(f"  wire x{i} = in[{i}];", file=file) 
         print("", file=file)
         for i in range(circuit.p):
             input, output = circuit.io[i] 
+            input = input[::-1]
             if input == "-" * circuit.n:
                 break
             else:
                 conds = []
-                print(f"wire r{i} = ", end="", file=file)
-                for j in range(circuit.n):
+                print(f"  wire r{i} = ", end="", file=file)
+                for j in range(circuit.n): 
                     if input[j] == "0":
-                        # print(f"(x{j} == 0)", end="", file=file)
-                        conds[i] = "(x{j} == 0)"
+                        conds.append(f"(x{j} == 0)")
                     elif input[j] == "1":
-                        # print(f"(x{j} == 1)", end="", file=file)
-                        conds[i] = "(x{j} == 1)"
+                        conds.append(f"(x{j} == 1)")
                     else:
                         continue
-                for j in range(circuit.n):
-                    print(f"{conds[j]}", end="", file=file)
-                    if conds[j + 1] 
 
+                for j in range(len(conds)):
+                    print(f"{conds[j]}", end="", file=file)
+                    if j != len(conds) - 1:
+                        print(" && ", end="", file=file)
                 print(f";", file=file)
         print("", file=file)
         print("endmodule", file=file)
