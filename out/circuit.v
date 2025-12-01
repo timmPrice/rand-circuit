@@ -9,13 +9,20 @@ module circuit (
   wire x3 = in[3];
   wire x4 = in[4];
 
-  wire r0 = (x0 == 0) && (x1 == 0) && (x4 == 0);
-  wire r1 = (x0 == 0) && (x2 == 1) && (x3 == 0);
-  wire r2 = (x0 == 0) && (x3 == 0) && (x4 == 0);
-  wire r3 = (x0 == 0) && (x4 == 1);
-  wire r4 = (x1 == 0) && (x3 == 1);
-  wire r5 = (x2 == 1);
-  wire r6 = (x1 == 1);
-  wire r7 = (x0 == 0) && (x4 == 0);
+  wire r0 = (x0 == 1) && (x2 == 1) && (x3 == 0);
+  wire r1 = (x2 == 1) && (x3 == 1) && (x4 == 1);
+  wire r2 = (x0 == 0) && (x2 == 1) && (x3 == 1);
+  wire r3 = (x1 == 1) && (x3 == 1);
+  wire r4 = (x2 == 0);
+  wire r5 = (x4 == 0);
+  wire r6 = (x2 == 1) && (x4 == 1);
+  wire r7 = (x0 == 0);
+  wire r8 = (x3 == 1);
+  wire r9 = (x0 == 1);
 
+  assign out[i] = ;
+  assign out[i] = ;
+  assign out[i] = ;
+  assign out[i] = ;
+  assign out[i] = ;
 endmodule

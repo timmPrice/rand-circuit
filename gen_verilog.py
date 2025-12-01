@@ -52,12 +52,18 @@ def gen_verilog(circuit: Circuit):
                         conds.append(f"(x{j} == 1)")
                     else:
                         continue
-
                 for j in range(len(conds)):
                     print(f"{conds[j]}", end="", file=file)
                     if j != len(conds) - 1:
                         print(" && ", end="", file=file)
                 print(f";", file=file)
+        print("", file=file)
+        for i in range(circuit.m):
+            print(f"  assign out[{i}] = ", end="", file=file)
+            for j in range(circuit.n):
+                if circuit.io[j] == 1:
+                print(f"", file=file)
+            print(f";", file=file)
         print("", file=file)
         print("endmodule", file=file)
 
