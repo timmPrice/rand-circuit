@@ -36,5 +36,6 @@ clean:
 	@rm -f gencircuit
 	@rm -f *.pla
 	@rm -f *.out
+	@rm -f ./out/*
 	@echo -e "\033[31mcleaned\033[0m"
 
