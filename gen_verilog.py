@@ -54,26 +54,17 @@ def gen_verilog(circuit: Circuit):
         print("", file=file)
 
         # output logic
-
-        # outs = [[] for _ in range(circuit.m)]
-        # for i, (input, output) in enumerate(circuit.io): 
-        #     for bit in range(circuit.m):
-        #         output = output[::-1]
-        #         if output == "-" * circuit.m:
-        #             break
-        #         elif output[bit] == "1":
-        #             outs[bit].append(f"r{i}")
-        #
-        # for i in range(circuit.m):
-        #     ors = " | ".join(outs[i]) or "1'b0" 
-        #     print(f"  assign out[{i}] = {ors};", file=file)
+        rows = gen_assign(circuit)
+        for i in range(circuit.m):
+            a_row = " | ".join(rows[i]) or "1'b0" 
+            print(f"  assign out[{i}] = {a_row};", file=file)
         print("", file=file)
 
         print("endmodule", file=file)
 
 def gen_row(circuit: Circuit, file) -> list[list[str]]: 
     rows: list[list[str]] = []
-    for i, (inp, outp) in enumerate(circuit.io):
+    for i, (inp, _) in enumerate(circuit.io):
         if inp == "-" * circuit.n:
             print(f"wire r{i} = 1'b1;", file=file)
             continue;
@@ -87,8 +78,13 @@ def gen_row(circuit: Circuit, file) -> list[list[str]]:
         rows.append(conds)
     return rows 
 
-def gen_assign(circuit: Circuit):
-    print("")
+def gen_assign(circuit: Circuit) -> list[list[str]]:
+    rows = [[] for _ in range(circuit.m)]
+    for i, (_, outp) in enumerate(circuit.io):
+        for bit in range(circuit.m):
+            if outp[bit] == "1":
+                rows[bit].append(f"r{i}")
+    return rows
 
 def connect_row():
     print("")
