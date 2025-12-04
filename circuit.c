@@ -16,7 +16,7 @@ enum gateName {
 };
 
 typedef struct {
-    int outputid; /* which node drives this input */
+    int oid; /* which node drives this input */
     bool not;
 } InputEdge;
 
@@ -37,8 +37,8 @@ int numInternal(int n, int m, int alpha, int* internal) {
 void connect_internal_nodes(int n, int internal, int total_nodes, Node* nodes) {
     /* internal gates range from n -> internal + n */
     for(int i = n; i < internal + n; i++) {
-        nodes[i].inputA.outputid = rand() % i; 
-        nodes[i].inputB.outputid = rand () % i; 
+        nodes[i].inputA.oid = rand() % i; 
+        nodes[i].inputB.oid = rand () % i; 
 
         nodes[i].inputA.not = rand() % 2;
         nodes[i].inputB.not = rand() % 2;
@@ -48,9 +48,9 @@ void connect_internal_nodes(int n, int internal, int total_nodes, Node* nodes) {
 void connect_output_nodes(int n, int m, int internal, int total_nodes, Node* nodes) {
     int output_range = n + internal;
     for(int i = output_range; i < output_range + m; i++) {
-        // nodes[i].inputA.outputid = (rand() % (n + internal)); // includes input nodes
-        nodes[i].inputA.outputid = (rand() % internal) + n; 
-        nodes[i].inputB.outputid = -1;  
+        // nodes[i].inputA.oid = (rand() % (n + internal)); // includes input nodes
+        nodes[i].inputA.oid = (rand() % internal) + n; 
+        nodes[i].inputB.oid = -1;  
     }
 }
 
@@ -93,12 +93,12 @@ bool evalNode(Node* nodes, int id, bool* inputs, bool* repeat, bool* repeatValid
             break;
 
         case OUTPUT:
-            result = evalNode(nodes, g -> inputA.outputid, inputs, repeat, repeatValid);
+            result = evalNode(nodes, g -> inputA.oid, inputs, repeat, repeatValid);
             break;
 
         default: {
-            bool a = evalNode(nodes, g -> inputA.outputid, inputs, repeat, repeatValid);
-            bool b = evalNode(nodes, g -> inputB.outputid, inputs, repeat, repeatValid);
+            bool a = evalNode(nodes, g -> inputA.oid, inputs, repeat, repeatValid);
+            bool b = evalNode(nodes, g -> inputB.oid, inputs, repeat, repeatValid);
             
             if (g -> inputA.not) {
                 a = !a;
@@ -179,15 +179,16 @@ void tableGen(Node* nodes, int n, int m, int internal) {
 
 int main() {
     srand(time(NULL));
-    int n = 5; int m = 5;
+    int n = 20; int m = 20;
     int internal = 0;
     int total_nodes = numInternal(n, m, 10, &internal);
     Node* nodes = genNodes(n, m, internal, total_nodes);
 
     // for (int i = 0; i < total_nodes; i++) {
-    //     printf("gateType: %u, inputA: %i, inputB: %i, gateId: %i\n", nodes[i].name, nodes[i].inputA.outputid, nodes[i].inputB.outputid, nodes[i].nodeid);
+    //     printf("gateType: %u, inputA: %i, inputB: %i, gateId: %i\n", nodes[i].name, nodes[i].inputA.oid, nodes[i].inputB.oid, nodes[i].nodeid);
     // }
 
     tableGen(nodes, n, m, internal);
+    printf("gate total = %i\n", internal);
     return 0; 
 }

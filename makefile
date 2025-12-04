@@ -19,9 +19,16 @@ build/done: ./espresso/CMakeLists.txt
 	@echo -e "\033[34m╚═════════════════════════════════════════════════╝\033[0m"
 
 circuit: espresso circuit.c 
+	@echo -e "\033[34m╔═════════════════════════════════════════════════╗\033[0m"
+	@echo -e "\033[34m║                Building Circuit                 ║\033[0m"
+	@echo -e "\033[34m╚═════════════════════════════════════════════════╝\033[0m"
+	@echo -e "[0%]\033[36m  Building circuit.c \033[0m"
 	@gcc circuit.c -o gencircuit
+	@echo -e "[33%]\033[36m generating circuit \033[0m"
 	@./gencircuit
+	@echo -e "[66%]\033[36m reducing circuit \033[0m"
 	@./build/espresso circuit.pla > ./out/reduced_circuit.pla
+	@echo -e "[100%]\033[36m done. \033[0m"
 	@echo -e "\033[34m╔═════════════════════════════════════════════════╗\033[0m"
 	@echo -e "\033[34m║           Circuit Generation Complete           ║\033[0m"
 	@echo -e "\033[34m╚═════════════════════════════════════════════════╝\033[0m"
@@ -29,7 +36,7 @@ circuit: espresso circuit.c
 verilog: gen_verilog.py
 	@python3 gen_verilog.py
 	@echo -e "\033[33m╔═════════════════════════════════════════════════╗\033[0m"
-	@echo -e "\033[33m║           Verilog Generation Complete           ║\033[0m"
+	@echo -e "\033[33m║          ~Verilog Generation Complete~          ║\033[0m"
 	@echo -e "\033[33m╚═════════════════════════════════════════════════╝\033[0m"
 clean: 
 	@rm -rf ./build/
