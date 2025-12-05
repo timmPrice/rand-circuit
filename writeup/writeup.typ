@@ -18,7 +18,7 @@
 )
 
 == § $dot$ Introduction and Background
-=== 1.1 $dot$ Program Overview 
+=== 1.1 $dot$ Circuit Generation
 #set par(first-line-indent: 1em);
     Verilog is a Hardware Description Language which is used to describe the logical behavior of digital circuits.
     Modules within Verilog define componets or whole circuits, and the goal of this project is to automate the creation of random Verilog modules representing combinational logic circuits.
@@ -39,6 +39,7 @@
         and $alpha = x in {RR}$.
         #line(length: 7cm, stroke: 0.2pt)
     ]
+
     After the total number of gates is selected, all $bold(X)$ gates are each randomly assigned a gate type (AND, OR, etc.).
     
     To connect internal nodes, a DAG graph data-structure is used. A #emph("DAG") or directed-acyclic-graph is where each edge or wire 
@@ -46,31 +47,31 @@
 
     The way to enforce this structure is by using Topological Sorting when assigning each gates inputs. When generating nodes each is put in a list in order of creation.
 
-#figure()[
-```c
-// some code 
+#figure(caption: "Internal Node Connection Function")[
+    ```c
+    // some code 
 
-connect_internal_nodes(...) 
-{   
-  for(int i = n; i < internal + n; i++)
-  {
-    nodes[i].inputA.oid = rand() % i; 
-    nodes[i].inputB.oid = rand() % i; 
-    nodes[i].inputA.not = rand() % 2;
-    nodes[i].inputB.not = rand() % 2;
-  }
-}
+    connect_internal_nodes(...) 
+    {   
+      for(int i = n; i < internal + n; i++)
+      {
+        nodes[i].inputA.oid = rand() % i; 
+        nodes[i].inputB.oid = rand() % i;
+        nodes[i].inputA.not = rand() % 2;
+        nodes[i].inputB.not = rand() % 2;
+      }
+    }
 
-// some code 
-```    
-]
+    // some code 
+    ```
+    ]
     Since the nodes are generated in an ordered list, this loops through each node starting at the first internal node
     and randomly selecting an internal node or input node that came before it in the list. Additionally, each inputs node's input wire may be inverted 
     to capture the behavior of the NOT gate; NOT's behavior works with single wires instead of requiring a whole gate.
     This allows any single node's output to be selected by any number of nodes that come after it in the list, fulfilling the unlimited fan-out requirement.
     To connect nodes to outputs, a random internal node is selected and connected to an output node. 
-    This concludes the generation of the random circuit. 
 
+=== 1.2 $dot$ Circuit Optimization
     It is most likely that there is some redundency in the generated circuit.
     Not all output nodes are effected by its chain of logic or the preceding inputs.
     #figure(caption: "Redundant Logic Minimilization")[ 
@@ -93,8 +94,10 @@ connect_internal_nodes(...)
     It seems to be the most widely accepted solution that works on any size of circuit, so given the unknown number of internal gates generated at runtime, it seems like the best fit for reducing the random circuits.
     
     Espresso accepts input through PLA file types which include $.i$ inputs, $.o$ outputs, rows of input and output vectors and $.e$ the end delimiter.
-        ```
-        // example PLA format
+    #figure(caption: "Example PLA Format")[
+        #line(length: 6cm, stroke: 0.2pt)
+        ``` 
+    // circuit.pla
         
         .i 5
         .o 5
@@ -104,10 +107,21 @@ connect_internal_nodes(...)
         11000 00101
         .e
         ```
+        #line(length: 7cm, stroke: 0.2pt)
+    ]
+
     Where the binary vectors on the left represent the circuit's input and the columns on the right represent the circuit's output.
     To optimize the generated circuit the graph must be converted to PLA format which is done by recursively walking backwards from outputs and evaluating each internal node.
+    Then a function writes to a `circuit.pla` file which contains the original unoptimised circuit generated.
+    
+    `circuit.pla` is then passed into Espresso which then optimizes/minimizes into another `.pla` file, this time in the `./out/` directory. 
+     This file, `reduced_circuit.pla`, is the final reduction of the circuits logic.
+     
+=== 1.3 $dot$ Verilog Generation
 
- === 1.2 $dot$ Use Cases
+=== 1.4 $dot$ Testing
+
+=== 1.5 $dot$ Use Cases
 #set par(first-line-indent: 1em);
     From this program steps can be taken to create large datasets of verilog modules.
 
@@ -115,11 +129,12 @@ connect_internal_nodes(...)
 _intentionally left blank_\
 _open source contributions_
 
-== § Challenges
+== § $dot$ Challenges
+== § $dot$ Moving Forward
 
-== § Deliverables
+== § $dot$ Deliverables
 
-== § Setup and Results
+== § $dot$ Setup and Results
 
 #strong[dependencies:]\
 _this list contains depencies and the versions that were used whilst testing and developing_
@@ -130,7 +145,7 @@ _this list contains depencies and the versions that were used whilst testing and
     [make - 4.4.1],
     [GNU bash - 5.2.32],
     [hadipourh/espresso - 3.0 (included in src)],
-    [steveicarus/iverilog - 11.0+ (optional)]
+    [steveicarus/iverilog - 11.0+ (optional)],
 )
 _other versions may work, but have not been tested_.
 
