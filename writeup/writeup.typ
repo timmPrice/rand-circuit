@@ -83,7 +83,29 @@ connect_internal_nodes(...)
         #line(length: 7cm, stroke: 0.2pt)
     ] 
     
-    In Figure 2, the output $y$ is independent of its input $b$ and therefore can be removed from the circuit to reduce or minimize the number of gates and "work" being done by the circuit. 
+    In Figure 2, the output $y$ is independent of its input $b$ and therefore can be removed from the circuit without changing $y$ to reduce or minimize the number of gates and "work" being done by the circuit. 
+    This also improves runtime by lowering latency and could reduce cost by removing gates from the resulting circuit.
+
+    This process is called logic minimilization or boolean algebra, and is known to have only heuristic solutions for larger expressions.
+    One of the most well known methods of heuristic logic reduction is the "Espresso heuristic logic minimizer."
+    Espresso manipulates binary vectors of an expressions input and output into cube structures then use a set of minimilization algorithms to find an optimal expression. 
+    There is no guarantee that this resulting expression will be the global minimimum reduction, but in practice the resulting expression is likely extremely close or completely reduced.
+    It seems to be the most widely accepted solution that works on any size of circuit, so given the unknown number of internal gates generated at runtime, it seems like the best fit for reducing the random circuits.
+    
+    Espresso accepts input through PLA file types which include $.i$ inputs, $.o$ outputs, rows of input and output vectors and $.e$ the end delimiter.
+        ```
+        // example PLA format
+        
+        .i 5
+        .o 5
+        00000 00101
+        10000 00101
+        01000 00101
+        11000 00101
+        .e
+        ```
+    Where the binary vectors on the left represent the circuit's input and the columns on the right represent the circuit's output.
+    To optimize the generated circuit the graph must be converted to PLA format which is done by recursively walking backwards from outputs and evaluating each internal node.
 
  === 1.2 $dot$ Use Cases
 #set par(first-line-indent: 1em);
@@ -127,5 +149,7 @@ _other versions may work, but have not been tested_.
     spacing: 1.3em,
     marker: $dot$,
     [Wikipedia (12/1/2025). Directed Acyclic Graph. Wikipedia. #link("https://en.wikipedia.org/wiki/Directed_acyclic_graph")],
-    [ Wikipedia (11/23/2025). Topological Sorting. Wikipedia. #link("https://en.wikipedia.org/wiki/Topological_sorting")] ,
+    [Wikipedia (11/23/2025). Topological Sorting. Wikipedia. #link("https://en.wikipedia.org/wiki/Topological_sorting")] ,
+    [Wikipedia (10/20/2025). Logic Optimization. Wikipedia. #link("https://en.wikipedia.org/wiki/Logic_optimization")],
+    [Wikipedia (6/30/2025). Espresso heuristic logic minimizer. Wikipedia. #link("https://en.wikipedia.org/wiki/Espresso_heuristic_logic_minimizer")],
 )
