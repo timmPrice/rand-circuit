@@ -119,24 +119,129 @@
      
 === 1.3 $dot$ Verilog Generation
 
-=== 1.4 $dot$ Testing
+    To generate a verilog `.v` file I used several python functions. The first function `read_pla` reads the `reduced_circuit.pla` file and makes a struct using its componets.
+    #figure(caption: "Reduced PLA File Struct")[
+        #line(length: 6cm, stroke: 0.2pt)
+        ```py
+            @dataclass
+            class Circuit:
+                i: int 
+                o: int 
+                p: int
+                io: list [Tuple[str, str]]
+        ```
+        #line(length: 7cm, stroke: 0.2pt)
+    ]
+    
+    The second function, `gen_verilog` makes a new file `circuit.v` and sets up a standard verilog module.
+    The generated Verilog module takes in an input vector of size $.i - 1$ and contains an output wire of size $.o - 1$ 
+    Each input vector of the PLA file is given a wire with a truth condition set to the combination of the vectors bits.
+    1 bits add `(x_ == 1)`, 0 bits add `(x_ == 0)` and don't care bits ("-", bits that were minimized and don't effect the circuit) get skipped entirely.
+    Each value is joined with an `&&` and the `x_` is the position of the bit in the vector.
+    For bit in the output wire is set to the combination of all rows whose bit is set to $1$ in its corresponding bit position and joined by a logical or. So, `output[1]` would take all rows who have a $1$ bit for position $1$ in the row. 
 
-=== 1.5 $dot$ Use Cases
+    #figure(caption: "Verilog File Structure")[
+    #line(length: 6cm, stroke: 0.2pt)
+    ```c
+    module circuit (
+        input wire  ["n":0] in,
+        output wire ["m":0] out
+    );
+
+      wire x0 = in[0];
+      // ...
+      wire x4 = in["n"];
+               
+      wire r0 = (x_ == _) && (x_ == _);
+      // ...
+      wire r4 = (x_ == _);
+
+      assign out[0] = r_ | r_;
+      // ...
+      assign out["m"] = r_;
+
+    endmodule
+    ```
+    #line(length: 7cm, stroke: 0.2pt)
+    ]
+
+== § $dot$ Moving Forward
+=== 2.1 $dot$ Use Cases
 #set par(first-line-indent: 1em);
-    From this program steps can be taken to create large datasets of verilog modules.
+    From this program steps can be taken to create a large dataset of verilog modules.
+    A large database of Verilog modules could be used to benchmark verification tools. 
+    Every tool should return the same output if a testbench was generated alongside the `circuit.v` file. 
+    So, for someone developing a new Verilog simulator, having a large amount of variety in source to test against can help uncover subtle inconsistencies.
+    Another idea would be to keep a database of both minimized and un-minimized circuits so that comparisons could be drawn from the minimization.
+    The paired circuits could be used for training machine learning models to recognize what structures in a circuit are most likely going to be minimized.
+            
+=== 2.2 $dot$ Future Program Additions
+    Since each module should be synthesizable test bench isn't totally necissary.
+    But if I were to generate verilog for non-optimized circuits, also generating a testbench and comparing the values would be helpful.
+    
+    Adding combinational logic support would make the generated circuits more interesting and useful.
 
 == § $dot$ Contributions
-_intentionally left blank_\
-_open source contributions_
+    I chose to work on my project alone, so all code outside of the Espresso minimizer was written by myself. 
+    Everything in `gen_verilog.py` and `circuit.c` as well as the `makefile` was all developed by me.
+
+    A very large contribution to my project was the Espresso Heuristic Logic Minimizer which was originally developed by "Brayton et al. at the University of California, Berkeley."
+    The implementation I used within my system was written by the github user hadipourh and is linked in the references section of this paper as well as the README in my source code.
+     
 
 == § $dot$ Challenges
-== § $dot$ Moving Forward
+
+    The biggest challenge I faced while developing my circuit generator was minimizing the logic.
+    I believe unrestricted boolean logic minimalization falls into the category of NP-complete problems.
+    I spent lots of time researching possible solutions that I could reimplement, but the complexity of this problem is simply out of my current paygrade.
+    So, while I'm not thrilled with building off the open source Espresso repository I used, it does seem like the best solution given the constraints of my project.
+
+    Another issue is the runtime after compilation, and the memory usage during circuit generation.
+    Increasing my alpha value much higher than 10 results in the program crashing on my laptop which I can only assume is a memory overflow when it does work on my desktop.
+    The runtime problem persist both with my circuit generation and with the Espresso minimizer. 
+    It takes multiple minutes for the program to generate and minimize larger sized circuits.
+    The highest I went when testing was `n = 20` and `m = 20` and an alpha of $10$ which seems to work but needs to be better optimized.
+    Its worth mentioning that I'm not a very good C programmer and likely have memory issues causing unnecissary overhead.
+    It does seem like generating very large circuits is really quite difficult due to memory constraints and future implementation might benefit from some technique to store the state of the graph in something other than memory and generating it in parts.
+        
+    I spent some amount of time trying to visualise the logic graph generated by the circuit but that also resulted in a dead-end.
+    I imagined something like the unix tree command that shows how directories link together but with the nodes and wires from the logic graph.
+    I think it would be interesting to see how different the structures look between random generations but ultimately didn't have time to spend on that extra step.
+
+    I found converting PLA files to Verilog to be initially quite tricky. 
+    I originally intended to write everything in C but decided that for writing text to a file python was the superior option.
+    While the python program is really not well written, it does work and it is reasonably fast.
 
 == § $dot$ Deliverables
-
+    The source deliverable folder contains a `circuit.c` and `gen_verilog` files. 
+    The Espresso Heuristic Logic Minimizer is contained in the `Expresso` folder which has all of its non-compiled source code.
+    
+    To compile and run the entire system a makefile is inclduded within the directory.
+    Simply run the `make` command and all source files should build in order, then run accordingly.
+    Lots of output will be echoed to visualize the stage of the program because it can take several minutes to run at larger sizes
+    If something were to go wrong during compilation, or the user should wish to delete the programs output and executables, the `make clean` command will delete the contents of the `./out/` directory, clean the compiled Espresso program, and remove the executable files generated in the source directory.
+    There should be a "cleaned" message returned if the operation was successful.
+    
+    All of the important output should be found within the `./out/` directory.
+    This should contain both `circuit.v` and `reduced_circuit.pla`.
+    Should you want to view the non-minimized pla file, it can be found after compilation in the source directory.
+     
+    A full list of dependencies can be found in the "Setup and Results section"
+    
 == § $dot$ Setup and Results
 
-#strong[dependencies:]\
+=== 6.1 System Requirements
+    A linux based operating system is recommended for running my program. 
+    I have only tested it on "Fedora Linux 41."
+    I would assume since all the depencies are cross platform it should work on other systems, but do disclaim the lack of testing on other systems.
+    
+    I have run my program on both my laptop and desktop with much better results coming from my desktop.
+    Due to memory constraints on my laptop I have run into several program crashes when generating larger circuits, and my 32gb of ram on my desktop has been, not fully, but more reliable.
+    I also get my output returned quite a bit quicker. Most of my good testing was done with a "AMD Ryzen 5 5600."
+    The program is still painfully slow at larger sizes but it is a level of magniture quicker on the desktop.
+    I would highly recommend using a desktop system when generating large sized circuits.
+
+=== 6.2 $dot$ Dependencies
 _this list contains depencies and the versions that were used whilst testing and developing_
 
 #list(
@@ -149,6 +254,38 @@ _this list contains depencies and the versions that were used whilst testing and
 )
 _other versions may work, but have not been tested_.
 
+=== 6.3 $dot$ Generating Circuits of Different Size
+
+As mentioned in the deliverables section, I hope the makefile included should make it easy to compile and run the source code.
+There currently is no slick way to change the size of the circuit.
+The way to change the generation parameters is modifying the main method in the `circuit.c` file. 
+
+#figure(caption: "Circuit Generation Parameters")[
+    #line(length: 6cm, stroke: 0.2pt)
+    ```c
+    int main() {
+        srand(time(NULL));
+        int n = 20; int m = 20;
+        int internal = 0;
+        int total_nodes = numInternal(...);
+        Node* nodes = genNodes(...);
+
+        tableGen(nodes, n, m, internal);
+        return 0; 
+    ```
+    #line(length: 7cm, stroke: 0.2pt)
+]
+
+    In this function, `int n = ...` and `int m = ...` are the input and output node counts. 
+    The internal will be generated at runtime and should remain zero.
+    In the `numInternal()` function call, an integer is accepted after n and m, and that is the $alpha$ value referenced in section 1.1.
+    Making this number higher than 20 will likely result in crashes, but will need to be tested on a machine-by-machine basis.
+
+=== 6.4 $dot$ Observations
+    My main takeaway from my output is the comparison in size from the initial generated circuit and the reduced circuit.
+    When generating a circuit with parameters $n = 20$, $m = 20$ and $alpha = 10$ the size is quite large, and the number of initial internal gates is printed to the console during the generation process.
+    The initial `circuit.pla` file is multiple thousands of lines long, and the reduced circuit is hardly a fraction.
+    I really want to generate what the initial verilog file would look like just for scale comparison. 
 
 #set page(columns: 1)
 #place(
@@ -167,4 +304,8 @@ _other versions may work, but have not been tested_.
     [Wikipedia (11/23/2025). Topological Sorting. Wikipedia. #link("https://en.wikipedia.org/wiki/Topological_sorting")] ,
     [Wikipedia (10/20/2025). Logic Optimization. Wikipedia. #link("https://en.wikipedia.org/wiki/Logic_optimization")],
     [Wikipedia (6/30/2025). Espresso heuristic logic minimizer. Wikipedia. #link("https://en.wikipedia.org/wiki/Espresso_heuristic_logic_minimizer")],
+    [Hadipourh (10/27/2025). espresso. #link("https://github.com/hadipourh/espresso")],
+    [Richard L. Rudell (Jun 1986). Multiple-Valued Logic Minimization for PLA Synthesis. #link("https://www2.eecs.berkeley.edu/Pubs/TechRpts/1986/ERL-86-65.pdf")],
+    [Peeter Ellervee () Espresso Explained, How espresso works and what is behind this. #link("https://www.tud.ttu.ee/im/Peeter.Ellervee/IAS0540/espresso-explained.pdf")],
+    [University of California Berkley (), Espresso, a Multi-valued PLA minimization. #link("https://ptolemy.berkeley.edu/projects/embedded/pubs/downloads/espresso/index.htm")]
 )
